@@ -1,0 +1,33 @@
+{
+  "messages": [
+    {
+      "id": 1767792802550,
+      "text": "測試",
+      "image": null,
+      "time": "2026/1/7 21:33:22",
+      "color": "blue",
+      "folderId": null,
+      "comments": [],
+      "position": {
+        "x": 160,
+        "y": 120,
+        "rotation": 0
+      }
+    },
+    {
+      "id": 1767792810871,
+      "text": "測試",
+      "image": null,
+      "time": "2026/1/7 21:33:30",
+      "color": "purple",
+      "folderId": null,
+      "comments": [],
+      "position": {
+        "x": 160,
+        "y": 120,
+        "rotation": 0
+      }
+    }
+  ],
+  "folders": []
+}

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>匿名留言板</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="folders-section">
+            <div class="folder-header">
+                <h3>文件夹</h3>
+                <button id="createFolderBtn" class="create-folder-btn">+ 新建文件夹</button>
+            </div>
+            <div class="folders-list-container">
+                <div class="folders-list" id="foldersList">
+                    <!-- 文件夹将在这里显示 -->
+                </div>
+            </div>
+            <div class="folder-pagination">
+                <button id="prevBtn" class="pagination-btn" disabled>上一页</button>
+                <button id="nextBtn" class="pagination-btn" disabled>下一页</button>
+            </div>
+        </div>
+        
+        <div class="messages-container" id="messagesContainer">
+            <!-- 留言将在这里显示 -->
+        </div>
+        
+        <div class="message-form">
+            <textarea id="messageInput" placeholder="写下你的留言..." rows="4"></textarea>
+            
+            <div class="upload-section">
+                <label for="imageInput" class="upload-btn">
+                    <span>上传本地图片</span>
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                </label>
+                <div id="imagePreview" class="image-preview"></div>
+            </div>
+            
+            <button id="submitBtn" class="submit-btn">发布留言</button>
+        </div>
+    </div>
+    
+    <!-- Socket.IO 客户端库 -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+
+

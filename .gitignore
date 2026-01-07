@@ -1,0 +1,32 @@
+# 依赖
+node_modules/
+
+# 数据文件（可选：如果不想同步数据到Git）
+# 留言web/data.json
+
+# 日志
+*.log
+npm-debug.log*
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 临时文件
+*.tmp
+
+# 部署工具（本地使用）
+ngrok.exe
+ngrok.zip
+cloudflared.exe
+*.bat
+
+# 部署配置（根据需要决定是否上传）
+railway.json
+vercel.json
