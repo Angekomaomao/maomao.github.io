@@ -28,68 +28,95 @@ let draggedElement = null;
 // API 基础URL
 const API_BASE_URL = window.location.origin;
 
-// 初始化 Socket.IO 连接
-const socket = io(API_BASE_URL);
+// 检测是否为本地文件模式
+const isLocalFile = window.location.protocol === 'file:';
 
-// Socket.IO 连接状态
-socket.on('connect', () => {
-    console.log('✅ 实时连接已建立');
-});
-
-socket.on('disconnect', () => {
-    console.log('❌ 实时连接已断开');
-});
-
-// 监听新留言事件
-socket.on('newMessage', async (message) => {
-    console.log('📩 收到新留言:', message);
-    // 只在相同文件夹时才刷新
-    if (message.folderId === currentFolder || (!message.folderId && !currentFolder)) {
-        await loadMessages();
-        await loadFolders();
+// Socket.IO 连接 (仅在服务器模式下启用)
+let socket = null;
+if (!isLocalFile && typeof io !== 'undefined') {
+    try {
+        socket = io(API_BASE_URL);
+        
+        socket.on('connect', () => {
+            console.log('✅ 实时连接已建立');
+        });
+        
+        socket.on('disconnect', () => {
+            console.log('❌ 实时连接已断开');
+        });
+        
+        // 监听新留言事件
+        socket.on('newMessage', async (message) => {
+            console.log('📩 收到新留言:', message);
+            if (message.folderId === currentFolder || (!message.folderId && !currentFolder)) {
+                await loadMessages();
+                await loadFolders();
+            }
+        });
+        
+        // 监听删除留言事件
+        socket.on('deleteMessage', async (messageId) => {
+            console.log('🗑️ 留言被删除:', messageId);
+            await loadMessages();
+            await loadFolders();
+        });
+        
+        // 监听更新留言事件
+        socket.on('updateMessage', async (message) => {
+            console.log('🔄 留言已更新:', message);
+            await loadMessages();
+        });
+        
+        // 监听新文件夹事件
+        socket.on('newFolder', async (folder) => {
+            console.log('📁 新文件夹创建:', folder);
+            await loadFolders();
+        });
+        
+        // 监听删除文件夹事件
+        socket.on('deleteFolder', async (folderId) => {
+            console.log('🗑️ 文件夹被删除:', folderId);
+            await loadFolders();
+            await loadMessages();
+        });
+    } catch (e) {
+        console.warn('⚠️ Socket.IO 未加载，使用本地存储模式');
     }
-});
+}
 
-// 监听删除留言事件
-socket.on('deleteMessage', async (messageId) => {
-    console.log('🗑️ 留言被删除:', messageId);
-    await loadMessages();
-    await loadFolders();
-});
-
-// 监听更新留言事件
-socket.on('updateMessage', async (message) => {
-    console.log('🔄 留言已更新:', message);
-    await loadMessages();
-});
-
-// 监听新文件夹事件
-socket.on('newFolder', async (folder) => {
-    console.log('📁 新文件夹创建:', folder);
-    await loadFolders();
-});
-
-// 监听删除文件夹事件
-socket.on('deleteFolder', async (folderId) => {
-    console.log('🗑️ 文件夹被删除:', folderId);
-    await loadFolders();
-    await loadMessages();
-});
-
-// 获取所有数据（包括留言和文件夹）
+// 获取所有数据（包括留言和文件夹）- 支持本地和服务器模式
 async function getAllData() {
+    // 本地文件模式：使用 localStorage
+    if (isLocalFile) {
+        const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+        const folders = JSON.parse(localStorage.getItem('folders') || '[]');
+        return { messages, folders };
+    }
+    
+    // 服务器模式：尝试从API获取
     try {
         const response = await fetch(`${API_BASE_URL}/api/data`);
         if (!response.ok) throw new Error('获取数据失败');
         return await response.json();
     } catch (error) {
-        console.error('获取数据失败:', error);
-        return { messages: [], folders: [] };
+        console.warn('⚠️ API获取失败，降级到localStorage:', error);
+        // 降级到 localStorage
+        const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+        const folders = JSON.parse(localStorage.getItem('folders') || '[]');
+        return { messages, folders };
     }
 }
 
-// 保存所有数据
+// 保存所有数据 - 支持本地和服务器模式
 async function saveAllData(data) {
+    // 本地文件模式：使用 localStorage
+    if (isLocalFile) {
+        localStorage.setItem('messages', JSON.stringify(data.messages || []));
+        localStorage.setItem('folders', JSON.stringify(data.folders || []));
+        return { success: true };
+    }
+    
+    // 服务器模式：尝试保存到API
     try {
         const response = await fetch(`${API_BASE_URL}/api/data`, {
             method: 'POST',
@@ -101,8 +128,11 @@ async function saveAllData(data) {
         if (!response.ok) throw new Error('保存数据失败');
         return await response.json();
     } catch (error) {
-        console.error('保存数据失败:', error);
-        return { success: false };
+        console.warn('⚠️ API保存失败，降级到localStorage:', error);
+        // 降级到 localStorage
+        localStorage.setItem('messages', JSON.stringify(data.messages || []));
+        localStorage.setItem('folders', JSON.stringify(data.folders || []));
+        return { success: true };
     }
 }
 
